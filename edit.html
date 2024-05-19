@@ -1,0 +1,182 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script>
+
+            function loadDevices() {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        console.log(this.responseText)
+                        var devices = JSON.parse(this.responseText)
+                        for(var i = 1; i < Object.keys(devices).length; i++) {
+                            addRow()
+                        }
+
+                        var names = document.getElementsByClassName("name")
+                        var types = document.getElementsByClassName("type")
+                        var addresses = document.getElementsByClassName("address")
+                        var ports = document.getElementsByClassName("port")
+                        var topics = document.getElementsByClassName("topic")
+                        var onMessages = document.getElementsByClassName("onMessage")
+                        var offMessages = document.getElementsByClassName("offMessage")
+
+                        for(var i = 0; i < names.length; i++) {
+                            names[i].value = devices["device" + i].M.name.S
+                            types[i].value = devices["device" + i].M.type.S
+                            addresses[i].value = devices["device" + i].M.address.S
+                            ports[i].value = devices["device" + i].M.port.S
+                            topics[i].value = devices["device" + i].M.topic.S
+                            onMessages[i].value = devices["device" + i].M.onMessage.S
+                            offMessages[i].value = devices["device" + i].M.offMessage.S
+                        }
+
+                    } else if(this.readyState == 4 && this.status == 404) {
+                        //alert("Login failed")
+                        //document.getElementById("Login").innerHTML = "Login";
+                    }
+                };
+                xhttp.open("GET", ("" + window.location).split("?")[0] + "/Devices?state=" + getQueryString("state"), true);
+                xhttp.send(null)
+            }
+
+
+            function validateEdit() {
+                var postString = ""
+                var names = document.getElementsByClassName("name")
+                var types = document.getElementsByClassName("type")
+                var addresses = document.getElementsByClassName("address")
+                var ports = document.getElementsByClassName("port")
+                var topics = document.getElementsByClassName("topic")
+                var onMessages = document.getElementsByClassName("onMessage")
+                var offMessages = document.getElementsByClassName("offMessage")
+
+                for(var i = 0; i < names.length; i++) {
+                    if(names[i].value !== "") {
+                        if(addresses[i].value == "" ||
+                        ports[i].value == "" ||
+                        topics[i].value == "" ||
+                        onMessages[i].value == "" ||
+                        offMessages[i].value == "") {
+                            alert("Please fill in all feilds.")
+                            return
+                        }
+                    postString = postString +
+                        "&name=" + names[i].value +
+                        "&type=" + types[i].value +
+                        "&address=" + addresses[i].value +
+                        "&port=" + ports[i].value +
+                        "&topic=" + topics[i].value +
+                        "&onMessage=" + onMessages[i].value +
+                        "&offMessage=" + offMessages[i].value
+                    }
+
+                }
+
+                console.log(postString)
+
+                var redirect_uri = getQueryString("redirect_uri")
+                var state = getQueryString("state")
+
+                var current = "" + window.location
+                var link = current.split("?")[0] +  "/Save?state=" + state +
+                    "&redirect_uri=" + redirect_uri  + postString
+
+                console.log(link)
+                window.location = link
+            }
+
+            function useSameAddress() {
+                var useSame = document.getElementById("useSame").checked
+                var addresses = document.getElementsByClassName("address")
+                var ports = document.getElementsByClassName("port")
+
+                if(useSame) {
+                    console.log(addresses[0].value)
+                    for(var i = 1; i < addresses.length; i++) {
+                        addresses[i].setAttribute("disabled","disabled")
+                        addresses[i].value = addresses[0].value
+
+                        ports[i].setAttribute("disabled","disabled")
+                        ports[i].value = ports[0].value
+                    }
+                } else {
+                    for(var i = 1; i < addresses.length; i++) {
+                        addresses[i].removeAttribute("disabled");
+                        ports[i].removeAttribute("disabled");
+                    }
+                }
+            }
+
+
+
+            function addRow() {
+                var tableElem = document.getElementById("mainTable")
+                var newRow = document.createElement("tr")
+
+
+
+
+                var row = "<td><input class=\"name\"></td><td><select class=\"type\"><option value=\"SWITCH\">SWITCH</option><option value=\"LIGHT\">LIGHT</option><option value=\"SMARTPLUG\">SMARTPLUG</option></select></td><td><input class=\"address\"></td><td><input class=\"port\"></td><td><input class=\"topic\"></td><td><input class=\"onMessage\"></td><td><input class=\"offMessage\"></td>"
+
+                newRow.innerHTML = row
+                tableElem.appendChild(newRow)
+
+                // if(document.getElementsByClassName("name").length == 20) {
+                //     document.getElementById("add").setAttribute("disabled", "disabled")
+                //     document.getElementById("support").removeAttribute("hidden")
+                // }
+            }
+
+            var getQueryString = function ( field, url ) {
+                var href = url ? url : window.location.href;
+                var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+                var string = reg.exec(href);
+                return string ? string[1] : null;
+            }
+        </script>
+    </head>
+    <body onload="loadDevices()">
+        <div class="row">
+            <div class="col-sm-4">
+                <h2 class="text-center">Edit Devices</h2>
+            </div>
+            <button class="col-sm-4" id="submit" style="width: 100px; margin-top: 20;" type="button" onclick="validateEdit()">Save</button>
+            <div class="col-sm-4" style="margin-top: 20;">
+                <input type="checkbox" id="useSame" onclick="useSameAddress()"> Use the same address & port for all devices
+            </div>
+        </div>
+        <table style="width:100%" class="table table-striped table-bordered .thead-dark">
+            <tbody id="mainTable">
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Address</th>
+                <th>Port</th>
+                <th>Topic</th>
+                <th>On Message</th>
+                <th>Off Message</th>
+              </tr>
+              <tr>
+                <td><input class="name"></td>
+                <td>
+                <select class="type">
+                    <option value="SWITCH">SWITCH</option>
+                    <option value="LIGHT">LIGHT</option>
+                    <option value="SMARTPLUG">SMARTPLUG</option>
+                </select></td>
+                <td><input class="address"></td>
+                <td><input class="port"></td>
+                <td><input class="topic"></td>
+                <td><input class="onMessage"></td>
+                <td><input class="offMessage"></td>
+              </tr>
+          </tbody>
+        </table>
+        <button id="add" style="width: 100px; margin-left: 20;" type="button" onclick="addRow()">Add More +</button><br>
+        <div id="support" hidden="true">Please contact support for more than 20 devices</div>
+        <div id="support">To remove a device, clear all of the feilds</div>
+    </body>
+</html>

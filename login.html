@@ -1,0 +1,98 @@
+<html>
+    <head>
+        <script>
+
+            function checkLogin() {
+                if(getQueryString("login") === "failed") {
+                    goToLogin()
+                    alert("Incorrect Login. Try agian.")
+                }
+                
+                if(getQueryString("register") === "failed") {
+                    goToRegister()
+                    alert("Registration Failed. Try agian.")
+                } else if(getQueryString("register") === "success") {
+                    alert("Registration Success. Please log in.")
+                }
+            }
+
+            function validateLogin() {
+                var email = document.getElementById("email").value
+                var password = document.getElementById("pword").value
+                var redirect_uri = getQueryString("redirect_uri")
+                var state = getQueryString("state")
+
+                var current = "" + window.location
+                var link = current.split("?")[0] +  "/Login?state=" + state +
+                    "&redirect_uri=" + redirect_uri  +
+                    "&email=" + email +
+                    "&password=" + password
+
+                window.location = link
+            }
+
+            function validateRegister() {
+                var email = document.getElementById("email").value
+                var password = document.getElementById("pword").value
+                var confirmpassword = document.getElementById("cpword").value
+                var redirect_uri = getQueryString("redirect_uri")
+                var state = getQueryString("state")
+
+                var current = "" + window.location
+                var link = current.split("?")[0] + "/Register?state=" + state +
+                    "&redirect_uri=" + redirect_uri  +
+                    "&email=" + email +
+                    "&password=" + password
+
+                if(confirmpassword !== password) {
+                    alert("Passwords must match!")
+                } else {
+                    window.location = link
+                }
+            }
+
+            var state = "login"
+
+            function switchState() {
+                if(state === "login") {
+                    state = "register"
+                    goToRegister()
+                } else {
+                    state = "login"
+                    goToLogin()
+                }
+            }
+
+            function goToLogin() {
+                document.getElementById("title").innerHTML = "Login"
+                document.getElementById("confirm").style.display = "none";
+                document.getElementById("submit").setAttribute("onclick", "validateLogin()")
+                document.getElementById("submit").innerHTML = "Login"
+                document.getElementById("question").innerHTML = "Not registered? Click here"
+            }
+
+            function goToRegister() {
+                document.getElementById("title").innerHTML = "Register"
+                document.getElementById("confirm").style.display = "";
+                document.getElementById("submit").setAttribute("onclick", "validateRegister()")
+                document.getElementById("submit").innerHTML = "Register"
+                document.getElementById("question").innerHTML = "Already registered? Click here"
+            }
+
+            var getQueryString = function ( field, url ) {
+                var href = url ? url : window.location.href;
+                var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+                var string = reg.exec(href);
+                return string ? string[1] : null;
+            }
+        </script>
+    </head>
+    <body onload="checkLogin()">
+        <a id="title">Login<a><br>
+        Email: <input id="email" type="text" name="email"><br>
+        Password: <input id="pword" type="password" name="password"><br>
+        <div id="confirm" style="display: none;">Confirm Password: <input id="cpword" type="password"><br></div>
+        <button id="submit" type="button" onclick="validateLogin()">Login</button><br>
+        <button id="question" type="button" onclick="switchState()" >Not registered? Click here</button>
+    </body>
+</html>
